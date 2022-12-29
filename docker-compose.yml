@@ -1,0 +1,28 @@
+version: '3.4'
+
+networks:
+  favoritesapi:
+  userapi:
+
+services:
+  favoritesapi:
+    image: ${DOCKER_REGISTRY-}favoritesapi
+    build:
+      context: .
+      dockerfile: FavoritesAPI/Dockerfile
+    ports:
+      - "4201:443"
+    networks:
+      - favoritesapi
+      - userapi
+
+  userapi:
+    image: ${DOCKER_REGISTRY-}userapi
+    build:
+      context: .
+      dockerfile: UserAPI/Dockerfile
+    ports:
+      - "4202:443"
+    networks:
+      - favoritesapi
+      - userapi
