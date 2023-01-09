@@ -42,6 +42,26 @@ namespace UserAPI.Controllers
             cloudinary = new Cloudinary(account);
         }
 
+        [HttpDelete("delete-google")]
+
+        public async Task<IActionResult> DeleteGoogle()
+        {
+            try
+            {
+                var userId = int.Parse(_acc.HttpContext.User.FindFirstValue(ClaimTypes.PrimarySid));
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                var votes = await _context.Votes.Where(v => v.UserId == userId).ToListAsync();
+                _context.Votes.RemoveRange(votes);
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "User removed" });
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(new { message = ex.Message });
+            }
+        }
 
         [HttpDelete("admin-delete-image/{id}"), Authorize]
 
@@ -67,7 +87,7 @@ namespace UserAPI.Controllers
             }
         }
 
-        [HttpDelete("delete-image"),Authorize]
+        [HttpDelete("delete-image"), Authorize]
 
         public async Task<IActionResult> DeleteImage()
         {
@@ -75,15 +95,15 @@ namespace UserAPI.Controllers
             {
                 var userId = int.Parse(_acc.HttpContext.User.FindFirstValue(ClaimTypes.PrimarySid));
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-                if(user.PictureUrl != null)
+                if (user.PictureUrl != null)
                 {
-                user.PictureUrl = null;
-                var profilePicturePublicId = $"{_configuration.GetSection("Cloudinary:ProfilePicsFolderName").Value}/user{userId}_profile-picture";
-                var deletionParams = new DeletionParams(profilePicturePublicId)
-                {
-                    ResourceType = ResourceType.Image
-                };
-                cloudinary.Destroy(deletionParams);
+                    user.PictureUrl = null;
+                    var profilePicturePublicId = $"{_configuration.GetSection("Cloudinary:ProfilePicsFolderName").Value}/user{userId}_profile-picture";
+                    var deletionParams = new DeletionParams(profilePicturePublicId)
+                    {
+                        ResourceType = ResourceType.Image
+                    };
+                    cloudinary.Destroy(deletionParams);
                     _context.SaveChanges();
                     return Ok(new { message = "Picture delete succesfully" });
                 }
@@ -99,7 +119,7 @@ namespace UserAPI.Controllers
             }
         }
 
-        [HttpPost("add-image"),Authorize]
+        [HttpPost("add-image"), Authorize]
 
         public async Task<IActionResult> AddImage([FromForm] ImageVM image)
         {
@@ -139,22 +159,22 @@ namespace UserAPI.Controllers
 
         [HttpPatch("change-username"), Authorize]
 
-        public async Task<IActionResult> ChangeUsernema(string newUsername)
+        public async Task<IActionResult> ChangeUsernema([FromBody] UsernameVM username)
         {
             try
             {
                 var userId = int.Parse(_acc.HttpContext.User.FindFirstValue(ClaimTypes.PrimarySid));
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
-                if(_context.Users.Any(u => u.Username == newUsername))
+                if (_context.Users.Any(u => u.Username == username.Username))
                 {
                     return BadRequest(new { message = "Username already taken" });
                 }
                 else
                 {
-                user.Username = newUsername;
-                await _context.SaveChangesAsync();
-                return Ok(new { message = "Usernmane changed succesfully" });
+                    user.Username = username.Username;
+                    await _context.SaveChangesAsync();
+                    return Ok(new { message = "Usernmane changed succesfully" });
                 }
 
             }
@@ -175,7 +195,7 @@ namespace UserAPI.Controllers
                 var userId = int.Parse(_acc.HttpContext.User.FindFirstValue(ClaimTypes.PrimarySid));
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
                 var deletedUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
-                if(user.Role == "Admin")
+                if (user.Role == "Admin")
                 {
                     _context.Users.Remove(deletedUser);
                     await _context.SaveChangesAsync();
@@ -321,7 +341,7 @@ namespace UserAPI.Controllers
             {
                 var userId = int.Parse(_acc.HttpContext.User.FindFirstValue(ClaimTypes.PrimarySid));
 
-                if(_context.Votes.Any(v => v.UserId == userId && v.LinkId == req.LinkId && v.Vote == req.Vote))
+                if (_context.Votes.Any(v => v.UserId == userId && v.LinkId == req.LinkId && v.Vote == req.Vote))
                 {
                     var pom = await _context.Votes.FirstOrDefaultAsync(v => v.UserId == userId && v.LinkId == req.LinkId && v.Vote == req.Vote);
                     _context.Votes.Remove(pom);
@@ -366,7 +386,7 @@ namespace UserAPI.Controllers
                 var vote = await _context.Votes.Where(v => v.LinkId == id).ToListAsync();
                 var positiveVotes = vote.Where(v => v.Vote == true).Count();
                 var negativeVotes = vote.Where(v => v.Vote == false).Count();
-                return Ok(new {votes = positiveVotes - negativeVotes});
+                return Ok(new { votes = positiveVotes - negativeVotes });
 
             }
             catch (Exception ex)
@@ -400,7 +420,7 @@ namespace UserAPI.Controllers
             catch (Exception ex)
             {
 
-                return BadRequest(new {message = ex.Message}); 
+                return BadRequest(new { message = ex.Message });
             }
         }
 
@@ -411,7 +431,7 @@ namespace UserAPI.Controllers
             try
             {
 
-                var links = await _context.Link.Where(c => c.IdSadrzaja == id&& c.TipSadrzaja == tip).Include(l => l.Votes).Include(e => e.User).Select(u => new
+                var links = await _context.Link.Where(c => c.IdSadrzaja == id && c.TipSadrzaja == tip).Include(l => l.Votes).Include(e => e.User).Select(u => new
                 {
                     u.Id,
                     u.Link,
@@ -443,7 +463,7 @@ namespace UserAPI.Controllers
                 link.Link = links.Link;
                 link.Date = links.Date;
                 await _context.SaveChangesAsync();
-                return Ok(new { message = "Link edited succesfully!"});
+                return Ok(new { message = "Link edited succesfully!" });
             }
             catch (Exception ex)
             {
@@ -482,38 +502,38 @@ namespace UserAPI.Controllers
             try
             {
 
-            if(_context.Users.Any(u => u.Email == request.Email))
-            {
-                return BadRequest(new {message = "User already exists." });
-            }
+                if (_context.Users.Any(u => u.Email == request.Email))
+                {
+                    return BadRequest(new { message = "User already exists." });
+                }
 
-            if(_context.Users.Any(u => u.Username == request.Username))
-            {
-                return BadRequest(new { message = "Username is taken" });
-            }
+                if (_context.Users.Any(u => u.Username == request.Username))
+                {
+                    return BadRequest(new { message = "Username is taken" });
+                }
 
-            CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+                CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
-            var user = new User  
-            {
-                Username = request.Username,
-                Email = request.Email,
-                PasswordHash = passwordHash,
-                PassswordSalt = passwordSalt,
-                VerificationToken = CreateRandomToken(),
-                Role = "Registered"
-            };
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+                var user = new User
+                {
+                    Username = request.Username,
+                    Email = request.Email,
+                    PasswordHash = passwordHash,
+                    PassswordSalt = passwordSalt,
+                    VerificationToken = CreateRandomToken(),
+                    Role = "Registered"
+                };
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
 
-            var emailText = $"<h1>Welcome to Fuji</h1>" +
-            $"<h3>Please click " +
-                $"<a href=\"{_configuration.GetSection("ClientAppUrl").Value}/{user.VerificationToken}\">here</a>" +
-                $" to confirm your account</h3>";
-            SendEmail(user.Email, "Confirm your account", emailText);
+                var emailText = $"<h1>Welcome to Fuji</h1>" +
+                $"<h3>Please click " +
+                    $"<a href=\"{_configuration.GetSection("ClientAppUrl").Value}/{user.VerificationToken}\">here</a>" +
+                    $" to confirm your account</h3>";
+                SendEmail(user.Email, "Confirm your account", emailText);
 
 
-            return Ok( new {message = "User seccesfully created!" });
+                return Ok(new { message = "User seccesfully created!" });
             }
             catch (Exception ex)
             {
@@ -567,7 +587,7 @@ namespace UserAPI.Controllers
             var userId = int.Parse(_acc.HttpContext.User.FindFirstValue(ClaimTypes.PrimarySid));
             var pom = string.Empty;
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            if (user.Sub != null)
+            if (user.Sub.Length > 0)
             {
                 pom = "Google";
             }
@@ -583,17 +603,17 @@ namespace UserAPI.Controllers
         public async Task<IActionResult> Login(UserLoginRequest request)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-            if(user == null)
+            if (user == null)
             {
-                return BadRequest(new {message = "User not found!" });
+                return BadRequest(new { message = "User not found!" });
             }
 
-            if(!VerifyPasswordHash(request.Password, user.PasswordHash, user.PassswordSalt))
+            if (!VerifyPasswordHash(request.Password, user.PasswordHash, user.PassswordSalt))
             {
                 return BadRequest(new { message = "Something not right, try again!" });
             }
 
-            if(user.VerifiedAt == null)
+            if (user.VerifiedAt == null)
             {
                 return BadRequest(new { message = "Not verified!" });
             }
@@ -605,8 +625,8 @@ namespace UserAPI.Controllers
                 username = user.Username,
                 email = user.Email,
                 token = token,
-                id=user.Id,
-                role=user.Role,
+                id = user.Id,
+                role = user.Role,
                 verifiedAt = user.VerifiedAt,
                 pictureUrl = user.PictureUrl,
                 type = "Form",
@@ -652,13 +672,13 @@ namespace UserAPI.Controllers
             catch (Exception ex)
             {
 
-                return BadRequest(new {message = ex.Message});
+                return BadRequest(new { message = ex.Message });
             }
         }
 
         [HttpPost("change-password"), Authorize]
 
-        public async Task<IActionResult> ChangePassword([FromBody]ChangePassword change)
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePassword change)
         {
             var userId = int.Parse(_acc.HttpContext.User.FindFirstValue(ClaimTypes.PrimarySid));
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
@@ -683,6 +703,8 @@ namespace UserAPI.Controllers
             {
                 return BadRequest(new { message = "Something not right, try again" });
             }
+            var votes = await _context.Votes.Where(v => v.UserId == userId).ToListAsync();
+            _context.Votes.RemoveRange(votes);
             _context.Users.Remove(user);
             _context.SaveChanges();
             return Ok(new { message = "User removed" });
@@ -695,13 +717,13 @@ namespace UserAPI.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.VerificationToken == token.Token);
             if (user == null)
             {
-                return BadRequest("Invalid token"); 
+                return BadRequest("Invalid token");
             }
 
             user.VerifiedAt = DateTime.Now;
             await _context.SaveChangesAsync();
 
-            return Ok(new {message = "User Created"});
+            return Ok(new { message = "User Created" });
         }
 
 
@@ -710,23 +732,23 @@ namespace UserAPI.Controllers
         {
             try
             {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-            if (user == null)
-            {
-                return BadRequest(new {message = "Email not found"});
-            }
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+                if (user == null)
+                {
+                    return BadRequest(new { message = "Email not found" });
+                }
 
-            user.PasswordResetToken = CreateRandomToken();
-            user.ResetTokenExpires = DateTime.Now.AddDays(1);
-             _context.SaveChanges();
+                user.PasswordResetToken = CreateRandomToken();
+                user.ResetTokenExpires = DateTime.Now.AddDays(1);
+                _context.SaveChanges();
 
-            var emailText = $"<h1>Welcome to Fuji</h1>" +
-            $"<h3>Please click " +
-                $"<a href=\"{_configuration.GetSection("ClientAppUrl1").Value}/{user.PasswordResetToken}\">here</a>" +
-                $" to reset your password</h3>";
-            SendEmail(user.Email, "Reset your Password", emailText);
+                var emailText = $"<h1>Welcome to Fuji</h1>" +
+                $"<h3>Please click " +
+                    $"<a href=\"{_configuration.GetSection("ClientAppUrl1").Value}/{user.PasswordResetToken}\">here</a>" +
+                    $" to reset your password</h3>";
+                SendEmail(user.Email, "Reset your Password", emailText);
 
-            return Ok(new {message = "Ok"});
+                return Ok(new { message = "Ok" });
             }
             catch (Exception ex)
             {
@@ -742,7 +764,7 @@ namespace UserAPI.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.PasswordResetToken == request.Token);
             if (user == null || user.ResetTokenExpires < DateTime.Now)
             {
-                return BadRequest(new {message = "Invalid Token" });
+                return BadRequest(new { message = "Invalid Token" });
             }
 
             CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
@@ -753,8 +775,9 @@ namespace UserAPI.Controllers
             user.ResetTokenExpires = null;
             await _context.SaveChangesAsync();
 
-            return Ok(new {message = "Ok"});
+            return Ok(new { message = "Ok" });
         }
+
 
         private void SendEmail(string recipientEmail, string emailSubject, string emailText)
         {

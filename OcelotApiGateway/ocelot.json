@@ -289,6 +289,18 @@
       ]
     },
     {
+      "UpstreamPathTemplate": "/api/User/delete-google",
+      "UpstreamHttpMethod": [ "Post" ],
+      "DownstreamPathTemplate": "/api/User/delete-google",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 4202
+        }
+      ]
+    },
+    {
       "UpstreamPathTemplate": "/api/User/forgot-password",
       "UpstreamHttpMethod": [ "Post" ],
       "DownstreamPathTemplate": "/api/User/forgot-password",
@@ -314,7 +326,7 @@
     },
     //////////////FAVORITESAPI////////////////////
     {
-      "UpstreamPathTemplate": "/api/Favorites/add-favorite",
+      "UpstreamPathTemplate": "/api/User/add-favorite",
       "UpstreamHttpMethod": [ "Post" ],
       "DownstreamPathTemplate": "/api/Favorites/add-favorite",
       "DownstreamScheme": "https",
@@ -326,7 +338,7 @@
       ]
     },
     {
-      "UpstreamPathTemplate": "/api/Favorites/get-favorites",
+      "UpstreamPathTemplate": "/api/User/get-favorites",
       "UpstreamHttpMethod": [ "Get" ],
       "DownstreamPathTemplate": "/api/Favorites/get-favorites",
       "DownstreamScheme": "https",
@@ -338,21 +350,9 @@
       ]
     },
     {
-      "UpstreamPathTemplate": "/api/Favorites/delete-favorite/{tip}/{id}",
+      "UpstreamPathTemplate": "/api/User/delete-favorite/{tip}/{id}",
       "UpstreamHttpMethod": [ "Delete" ],
       "DownstreamPathTemplate": "/api/Favorites/delete-favorite/{tip}/{id}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 4201
-        }
-      ]
-    },
-    {
-      "UpstreamPathTemplate": "/api/Favorites/test",
-      "UpstreamHttpMethod": [ "Post" ],
-      "DownstreamPathTemplate": "/api/Favorites/test",
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {

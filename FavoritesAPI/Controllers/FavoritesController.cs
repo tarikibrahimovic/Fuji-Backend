@@ -57,23 +57,6 @@ namespace FavoritesAPI.Controllers
 
         }
 
-        [HttpPost("test")]
-
-        public async Task<IActionResult> PostMessage()
-        {
-            try
-            {
-                var userId = int.Parse(_acc.HttpContext.User.FindFirstValue(ClaimTypes.PrimarySid));
-                var token = HttpContext.Request.Headers["Authorization"].ToString();
-                return Ok(new { message = token });
-            }
-            catch (Exception ex)
-            {
-
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
         [HttpGet("get-favorites"), Authorize]
 
         public async Task<IActionResult> GetFavorites()
